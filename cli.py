@@ -1,4 +1,6 @@
-from re import match
+import os
+from re import T, match
+from time import time
 import colorama
 import prompt_toolkit,logging
 
@@ -67,13 +69,17 @@ class LoggingArea():
         self.textArea = prompt_toolkit.widgets.TextArea(
             focus_on_click=True,
             scrollbar=True,
-            lexer=ANSIColoredLexer()
+            lexer=ANSIColoredLexer(),
+            height=prompt_toolkit.layout.Dimension(weight=7)
         )
         self.__setReadOnly(True)
 
     def logText(self, msg):
         self.__setReadOnly(False)
+        flag=self.textArea.buffer.document.on_last_line
         self.textArea.buffer.text += f"{msg}\n"
+        if flag:
+            self.textArea.buffer.cursor_position = len(self.textArea.buffer.text)
         self.__setReadOnly(True)
 
     def __setReadOnly(self, value):
@@ -89,14 +95,14 @@ class LoggingHandler(logging.Handler):
         self.logging_area=logging_area
 
     def emit(self, record):
-        levelname = record.levelname
         message = self.format(record)
         self.logging_area.logText(f"{message}")
 
 def setup_logger(name:str,path:str,loggingArea:LoggingArea)->logging.Logger:
     logger=logging.getLogger(name)
     logger.setLevel(logging.INFO)
-    fileHandler = logging.FileHandler(path, encoding="utf-8")
+    os.makedirs(path,exist_ok=True)
+    fileHandler = logging.FileHandler(f"{path}{'/' if path[-1]!='/' else ''}{int(time())}.log", encoding="utf-8")
     streamHandler = LoggingHandler(loggingArea)
     formatter = logging.Formatter(
         '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')

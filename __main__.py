@@ -1,8 +1,10 @@
 import prompt_toolkit
 import asyncio,cli
+from client import Client
 
-async def main():
-    pass
+def main():
+    client=Client()
+    client.run()
 
 if __name__=="__main__":
-    asyncio.run(main())
+    main()
