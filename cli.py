@@ -2,11 +2,13 @@ import os
 from re import T, match
 from time import time
 import colorama
-import prompt_toolkit,logging
+import prompt_toolkit
+import logging
 
 from prompt_toolkit.application import Application
 from typing import Callable
 import prompt_toolkit.buffer
+import prompt_toolkit.filters
 import prompt_toolkit.layout
 import prompt_toolkit.lexers
 import prompt_toolkit.widgets
@@ -16,7 +18,9 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 
-#logger
+import global_vars
+
+# logger
 SUCCESS_LEVEL_NUM = 25
 logging.addLevelName(SUCCESS_LEVEL_NUM, 'SUCCESS')
 
@@ -64,6 +68,7 @@ class ANSIColoredLexer(Lexer):
 
         return get_line
 
+
 class LoggingArea():
     def __init__(self):
         self.textArea = prompt_toolkit.widgets.TextArea(
@@ -76,10 +81,11 @@ class LoggingArea():
 
     def logText(self, msg):
         self.__setReadOnly(False)
-        flag=self.textArea.buffer.document.on_last_line
+        flag = self.textArea.buffer.document.on_last_line
         self.textArea.buffer.text += f"{msg}\n"
         if flag:
-            self.textArea.buffer.cursor_position = len(self.textArea.buffer.text)
+            self.textArea.buffer.cursor_position = len(
+                self.textArea.buffer.text)
         self.__setReadOnly(True)
 
     def __setReadOnly(self, value):
@@ -89,21 +95,23 @@ class LoggingArea():
     def getArea(self):
         return self.textArea
 
+
 class LoggingHandler(logging.Handler):
-    def __init__(self,logging_area:LoggingArea):
+    def __init__(self, logging_area: LoggingArea):
         super().__init__()
-        self.logging_area=logging_area
+        self.logging_area = logging_area
 
     def emit(self, record):
         message = self.format(record)
         self.logging_area.logText(f"{message}")
 
-def setup_logger(name:str,path:str,loggingArea:LoggingArea)->logging.Logger:
-    logger=logging.getLogger(name)
+
+def setup_logger(name: str) -> logging.Logger:
+    logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
-    os.makedirs(path,exist_ok=True)
-    fileHandler = logging.FileHandler(f"{path}{'/' if path[-1]!='/' else ''}{int(time())}.log", encoding="utf-8")
-    streamHandler = LoggingHandler(loggingArea)
+    os.makedirs('./logs/', exist_ok=True)
+    fileHandler = logging.FileHandler(global_vars.logFile, encoding="utf-8")
+    streamHandler = LoggingHandler(global_vars.logArea)
     formatter = logging.Formatter(
         '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s')
     fileHandler.setFormatter(formatter)
@@ -112,6 +120,7 @@ def setup_logger(name:str,path:str,loggingArea:LoggingArea)->logging.Logger:
     logger.addHandler(streamHandler)
     return logger
 
+
 def setup_logging_area():
-    logging_area=LoggingArea()
+    logging_area = LoggingArea()
     return logging_area

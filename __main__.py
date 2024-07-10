@@ -1,10 +1,8 @@
 import prompt_toolkit
-import asyncio,cli
+import asyncio
+import cli
 from client import Client
 
-def main():
-    client=Client()
+if __name__ == "__main__":
+    client = Client()
     client.run()
-
-if __name__=="__main__":
-    main()
