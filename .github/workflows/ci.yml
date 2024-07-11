@@ -9,6 +9,7 @@ on:
     paths:
       - src/**
       - requirements.txt
+      - .github/workflows/ci.yml
 
 
 jobs:  
@@ -27,16 +28,14 @@ jobs:
         run: pip install -r requirements.txt --target src  
   
       - name: Package application  
-        run: |  
-          # 生成唯一的编号，这里使用Git提交哈希的前7位  
+        run: |    
           VERSION=$(git rev-parse --short HEAD)  
-          # 使用zipapp打包  
           python -m zipapp src -o build.$VERSION.pyz  
    
       - name: Archive packaged app  
-        uses: actions/upload-artifact@v2  
+        uses: actions/upload-artifact@v4.3.3
         with:  
-          name: "Packaged App" 
+          name: "Build file(.pyz)" 
           path: build.*.pyz  
           if-no-files-found: error
       
