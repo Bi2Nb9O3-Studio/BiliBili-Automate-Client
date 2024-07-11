@@ -1,0 +1,42 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - src/**
+      - requirements.txt
+
+
+jobs:  
+  build-and-package:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: checkout
+        uses: actions/checkout@v4
+  
+      - name: Set up Python  
+        uses: actions/setup-python@v2  
+        with:  
+          python-version: '3.11.4' # 根据你的需求选择合适的Python版本  
+  
+      - name: Install dependencies  
+        run: pip install -r ./requirements.txt --target ./src  
+  
+      - name: Package application  
+        run: |  
+          # 生成唯一的编号，这里使用Git提交哈希的前7位  
+          VERSION=$(git rev-parse --short HEAD)  
+          # 使用zipapp打包  
+          python -m zipapp src -o build.$VERSION.pyz  
+   
+      - name: Archive packaged app  
+        uses: actions/upload-artifact@v2  
+        with:  
+          name: "Packaged App" 
+          path: build.*.pyz  
+          if-no-files-found: error
+      
