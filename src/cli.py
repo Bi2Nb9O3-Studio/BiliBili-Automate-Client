@@ -124,3 +124,5 @@ def setup_logger(name: str) -> logging.Logger:
 def setup_logging_area():
     logging_area = LoggingArea()
     return logging_area
+
+#change
