@@ -1,24 +1,20 @@
 import os
-from re import T, match
-from time import time
-import colorama
+import pickle
+import queue
 import prompt_toolkit
 import logging
 
-from prompt_toolkit.application import Application
 from typing import Callable
-import prompt_toolkit.buffer
 import prompt_toolkit.filters
 import prompt_toolkit.layout
-import prompt_toolkit.lexers
 import prompt_toolkit.widgets
 import prompt_toolkit.widgets
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.document import Document
-from prompt_toolkit.styles import Style
 from prompt_toolkit.formatted_text import StyleAndTextTuples
 
 import global_vars
+import utils
 
 # logger
 SUCCESS_LEVEL_NUM = 25
@@ -104,9 +100,12 @@ class LoggingHandler(logging.Handler):
     def emit(self, record):
         message = self.format(record)
         self.logging_area.logText(f"{message}")
+        return
 
 
 def setup_logger(name: str) -> logging.Logger:
+    if logging.Logger.manager.loggerDict.get(name):
+        return logging.getLogger(name)
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     os.makedirs('./logs/', exist_ok=True)
@@ -124,3 +123,19 @@ def setup_logger(name: str) -> logging.Logger:
 def setup_logging_area():
     logging_area = LoggingArea()
     return logging_area
+
+
+def display_lists(statusQueue: queue.LifoQueue, commandQueue: queue.LifoQueue, task: utils.Task):
+    while True:
+        if statusQueue.full():
+            for _ in range(5):
+                statusQueue.get()
+        statusQueue.put(pickle.dumps({
+            "status": "active"
+        }))
+
+        if not commandQueue.empty():
+            command = pickle.loads(commandQueue.get())['action']
+            if command == 'stop':
+                global_vars.tasks.pop(task.uuid)
+                return
