@@ -1,6 +1,6 @@
 
 import time
-from typing import Any, Tuple
+from typing import Tuple
 
 import cli
 import global_vars

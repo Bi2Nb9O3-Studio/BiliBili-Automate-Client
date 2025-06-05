@@ -6,4 +6,3 @@ class Action():
         self.function = function
     def run(self,parentTask:utils.Task):
         return self.function(parentTask)
-        
