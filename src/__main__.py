@@ -1,6 +1,4 @@
-import prompt_toolkit
-import asyncio
-import cli
+print("Loading Client....")
 from client import Client
 
 if __name__ == "__main__":
