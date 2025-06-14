@@ -1,10 +1,13 @@
 import logging
 import os
+import sys
 import time
 import prompt_toolkit
 import prompt_toolkit.key_binding
+import prompt_toolkit.widgets
 
 import cli
+import commands
 import log
 from utils import ensure_path
 
@@ -59,6 +62,7 @@ class Client:
                 ])
             ])
         )
+        self.areas['input'].accept_handler=commands.commands_register.handle_command_line
         self.app = prompt_toolkit.Application(
             layout=self.layout, full_screen=True, mouse_support=True)
         kb = prompt_toolkit.key_binding.KeyBindings()
@@ -68,6 +72,16 @@ class Client:
             self.stop()
             self.app.exit()
         self.app.key_bindings = kb
+        
+        def stop(_):
+            """
+            Stop the client application.
+            """
+            self.stop()
+        
+        commands.commands_register.simple_register(
+            stop, "exit", "Exit Client", "Exit the BiBiClient application."
+        )
     def setup_logger(self,name) -> logging.Logger:
         if logging.Logger.manager.loggerDict.get(name):
             return logging.getLogger(name)
@@ -83,5 +97,6 @@ class Client:
         logger.addHandler(fileHandler)
         logger.addHandler(streamHandler)
         return logger
-    def stop():
-        ...
+    def stop(self):
+        self.app.exit()
+        sys.exit(0)
