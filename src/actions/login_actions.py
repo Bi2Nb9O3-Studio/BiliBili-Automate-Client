@@ -6,14 +6,13 @@ from .action import BaseAction
 
 
 class QRCodeLinkGetAction(BaseAction):
-    def __init__(self):
-        super().__init__()
-        self.name = "Get by QR Code"
-        self.description = "Get QR Code for login."
+    # super().__init__()
+    name = "Get by QR Code"
+    description = "Get QR Code for login."
 
-        self.namespace = "default"
-        self.path = "login.qrcode.getcode"
-        self.location = (self.namespace, self.path)
+    namespace = "default"
+    path = "login.qrcode.getcode"
+    location = (namespace, path)
     def function(self, runtime_args: tuple[Logger, User, LifoQueue, LifoQueue], *args, **kwargs):
         """
         生成用于登录的 B 站二维码。
