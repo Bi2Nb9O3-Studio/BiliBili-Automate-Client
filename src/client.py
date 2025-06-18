@@ -20,7 +20,7 @@ class Client:
         ensure_path("./logs/")
         self.logFile = f"./logs/{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
         self.logger = self.setup_logger("Main")
-        self.logger.info(str(actions.actions_register.actions))
+        self.logger.debug(str(actions.actions_register.actions))
         self.logger.info("BiBiClient started.")
 
     def generate_layout(self):
