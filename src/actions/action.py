@@ -5,19 +5,18 @@ from user import User
 
 
 class BaseAction:
-    def __init__(self) -> None:
-        self.name:str
-        self.description:str
-        self.namespace:str = ""
-        self.path: str = ""
-        self.location: tuple[str, str] = (self.namespace, self.path)
-
+    name: str
+    description: str
+    namespace: str = ""
+    path: str = ""
+    location: tuple[str, str] = (namespace, path)
     def function(self,runtime_args:tuple[Logger,User,LifoQueue,LifoQueue], *args, **kwargs):
         raise NotImplementedError("Action function must be implemented in subclasses.")
 
     def generate_command(self) -> dict:
         raise NotImplementedError("Action command generation must be implemented in subclasses.")
         return {}
+
 class ActionRegister:
     def __init__(self):
         self.actions = {}
