@@ -17,7 +17,6 @@ class Client:
     def __init__(self):
         self.areas = {}
         self.logFile = f"./logs/{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
-        ensure_path("./logs/")
         self.generate_layout()
         self.logger = self.setup_logger("Main")
         commands.commands_register.logger = self.setup_logger("Command")
