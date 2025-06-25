@@ -12,9 +12,8 @@ for _, module_name, ispkg in pkg_list:
     # 遍历模块的属性
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
-        # 检查属性是否为 BaseCommand 实例
-        if isinstance(attr, BaseCommand):
-            try:
+        try:
+            if isinstance(attr, BaseCommand):
                 commands_register.register(attr)
-            except ValueError as e:
-                print(e)
+        except ValueError as e:
+            print(e)
