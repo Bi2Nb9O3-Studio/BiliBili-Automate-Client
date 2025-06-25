@@ -16,12 +16,25 @@ from utils import ensure_path
 class Client:
     def __init__(self):
         self.areas = {}
-        self.generate_layout()
-        ensure_path("./logs/")
         self.logFile = f"./logs/{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+        self.generate_layout()
         self.logger = self.setup_logger("Main")
-        self.logger.debug(str(actions.actions_register.actions))
+        commands.commands_register.logger = self.setup_logger("Command")
+        self.logger.debug("Registered actions: %s", str(actions.actions_register.actions))
         self.logger.info("BiBiClient started.")
+        self.logger.info("Registered commands: %s", str(commands.commands_register.commands))
+
+        def help(_, logger):
+            """List all registered commands.
+
+            Args:
+                _ (str): Command line input, not used in this function.
+                logger (logging.Logger): Logger instance for logging.
+            """
+            logger.info(commands.commands_register.list_commands())
+        commands.commands_register.simple_register(
+            help, "help", "List Commands", "List all registered commands.",["?", "h"], hidden=False
+        )
 
     def generate_layout(self):
         self.logArea = cli.LoggingArea()
@@ -72,18 +85,21 @@ class Client:
         @kb.add("c-q")
         def _close(_):
             self.stop()
-            self.app.exit()
         self.app.key_bindings = kb
         
-        def stop(_):
+        def exit_command(_, logger):
+            """Exit the BiBiClient application.
+
+            Args:
+                _ (str): Command line input, not used in this function.
+                logger (logging.Logger): Logger instance for logging.
             """
-            Stop the client application.
-            """
+            logger.info("Exiting BiBiClient application.")
             self.stop()
-        
         commands.commands_register.simple_register(
-            stop, "exit", "Exit Client", "Exit the BiBiClient application."
+            exit_command, "exit", "Exit Client", "Exit the BiBiClient application.",["quit", "q","esc","bye"],hidden=False
         )
+        
     def setup_logger(self,name) -> logging.Logger:
         if logging.Logger.manager.loggerDict.get(name):
             return logging.getLogger(name)
