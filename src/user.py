@@ -2,7 +2,7 @@ import requests
 
 
 class User:
-    def __init__(self, mid: int | None = -1, set_to_default: bool = False) -> None:
+    def __init__(self, mid: int | None = -1) -> None:
     #     self.mid = mid
     #     self.refresh_token = ''
     #     self.name = ''

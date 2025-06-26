@@ -14,7 +14,7 @@ class BaseCommand:
     def __init__(self):
         ...
 
-    def handler(self, command_line: str, logger: logging.Logger):
+    def handler(command_line: str, logger: logging.Logger):
         raise NotImplementedError(
             "Command handler must be implemented in subclasses.")
 

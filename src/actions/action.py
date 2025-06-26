@@ -1,5 +1,4 @@
 from logging import Logger
-from queue import LifoQueue
 
 from user import User
 
@@ -10,7 +9,7 @@ class BaseAction:
     namespace: str = ""
     path: str = ""
     location: tuple[str, str] = (namespace, path)
-    def function(self,runtime_args:tuple[Logger,User,LifoQueue,LifoQueue], *args, **kwargs):
+    def function(self,runtime_args:tuple[Logger,User], *args, **kwargs):
         raise NotImplementedError("Action function must be implemented in subclasses.")
 
     def generate_command(self) -> dict:

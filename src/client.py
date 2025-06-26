@@ -22,7 +22,6 @@ class Client:
         commands.commands_register.logger = self.setup_logger("Command")
         self.logger.debug("Registered actions: %s", str(actions.actions_register.actions))
         self.logger.info("BiBiClient started.")
-        self.logger.info("Registered commands: %s", str(commands.commands_register.commands))
 
         def help(_, logger):
             """List all registered commands.
