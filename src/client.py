@@ -10,6 +10,7 @@ import actions
 import cli
 import commands
 import log
+import task
 from utils import ensure_path
 
 
@@ -22,7 +23,6 @@ class Client:
         commands.commands_register.logger = self.setup_logger("Command")
         self.logger.debug("Registered actions: %s", str(actions.actions_register.actions))
         self.logger.info("BiBiClient started.")
-        self.logger.info("Registered commands: %s", str(commands.commands_register.commands))
 
         def help(_, logger):
             """List all registered commands.
@@ -35,6 +35,8 @@ class Client:
         commands.commands_register.simple_register(
             help, "help", "List Commands", "List all registered commands.",["?", "h"], hidden=False
         )
+
+        self.taskExecutor = task.TaskExecutor()
 
     def generate_layout(self):
         self.logArea = cli.LoggingArea()
