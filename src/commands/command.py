@@ -23,7 +23,7 @@ class CommandRegister:
     def __init__(self):
         self.commands = {}
         self.logger:logging.Logger
-    def register(self, command: BaseCommand):
+    def register(self, command):
         if command.command in self.commands:
             raise ValueError(
                 f"Command {command.name} already registered with command line {command.command}")

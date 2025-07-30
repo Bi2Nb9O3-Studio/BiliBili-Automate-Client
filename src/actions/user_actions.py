@@ -1,6 +1,10 @@
+import io
 import json
 from logging import Logger
 from queue import LifoQueue
+
+import qrcode
+import qrcode.main
 
 from user import User
 from utils import ensure_file, ensure_path
@@ -93,3 +97,82 @@ class SaveCookiesAction(BaseAction):
         json.dump(content, open(file, "w", encoding="utf-8"))
         
         logger.info(f"Cookies for user {user.mid} saved successfully.")
+
+class GenerateCodeFromQRCodeLinkAndShowAction(BaseAction):
+    name = "Generate Code from QR Code Link and Show"
+    description = "Generate a code from the QR Code link and show it."
+    namespace = "default"
+    path = "user.login.qrcode.generate_code"
+    location = (namespace, path)
+    
+    def function(runtime_args: tuple[Logger, User], url: str, *args, **kwargs):
+        """
+        从二维码链接生成代码。
+
+        :param runtime_args: 包含日志记录器和用户对象的元组。
+        :param url: 二维码链接。
+        :param args: 可变位置参数，当前未使用。
+        :param kwargs: 可变关键字参数，当前未使用。
+        :return: 包含生成的代码的 JSON 响应数据。
+        """
+        qr = qrcode.main.QRCode(
+            version=1,
+            error_correction=qrcode.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        
+        out = io.StringIO('\n')
+        qr.print_ascii(out)
+        sp = out.getvalue().split('\n')
+        logger, user = runtime_args
+        for i in sp:
+            logger.info(i)
+        return {"code": 0, "data": {"qr_code": sp}}
+
+class UpdateUserInfoAction(BaseAction):
+    name = "Update User Info"
+    description = "Update user information from Bilibili API."
+
+    namespace = "default"
+    path = "user.info.update"
+    location = (namespace, path)
+
+    def function(runtime_args: tuple[Logger, User], *args, **kwargs):
+        """
+        更新用户信息。
+
+        :param runtime_args: 包含日志记录器和用户对象的元组。
+        :param args: 可变位置参数，当前未使用。
+        :param kwargs: 可变关键字参数，当前未使用。
+        :return: 包含更新后的用户信息的 JSON 响应数据。
+        """
+        logger, user = runtime_args
+        resp = user.session.get(
+            "https://api.bilibili.com/x/web-interface/nav").json()
+        user.mid = resp['data']['mid']
+        user.name = resp['data']['uname']
+        logger.debug(f"User info updated: {user.name} (MID: {user.mid})")
+        return
+
+class LoadSingleUserFromLocalAction(BaseAction):
+    name = "Load Single User from Local"
+    description = "Load a user information from local cache."
+
+    namespace = "default"
+    path = "user.load"
+    location = (namespace, path)
+
+    def function(self, runtime_args, *args, **kwargs):
+        logger, user = runtime_args
+        path=ensure_path("./users")
+        file=ensure_file(path + f"/{user.mid}.json")
+        content = json.load(open(file, "r", encoding="utf-8"))
+        user.session.cookies.update(content["cookies"])
+        user.refresh_token = content["refresh_token"]
+        user.last_cookies_update = content["last_cookies_update"]
+        logger.info(f"User {user.mid} loaded from local cache.")
+        user.name = content["name"]
+        return

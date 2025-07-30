@@ -10,6 +10,7 @@ import actions
 import cli
 import commands
 import log
+import task
 from utils import ensure_path
 
 
@@ -34,6 +35,8 @@ class Client:
         commands.commands_register.simple_register(
             help, "help", "List Commands", "List all registered commands.",["?", "h"], hidden=False
         )
+
+        self.taskExecutor = task.TaskExecutor()
 
     def generate_layout(self):
         self.logArea = cli.LoggingArea()
