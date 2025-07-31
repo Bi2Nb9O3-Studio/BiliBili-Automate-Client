@@ -35,6 +35,12 @@ class CommandName(BaseCommand):
     aliases: list[str] = ['alias1', 'alias2']
     hidden: bool = False #是否在help中隐藏
     command: str = "command" #调用时的命令字段
+    completion : dict = {
+        "subcom1":None,
+        "subcom2":{
+            "subsubcom1":None
+        }
+    }
     def handler(command_line: str, logger: logging.Logger):
         # Your command logic here
         ...
@@ -52,7 +58,9 @@ class CommandName(BaseCommand):
 
 ```python
 commands.commands_register.simple_register(
-            commandFunction, "command", "commandName", "commandDescritipon",["alias1","alias2"],hidden=False #or True
+            commandFunction, "command", "commandName", "commandDescritipon",["alias1","alias2"],hidden=False,#or True
+            completion=completionDict
+
         )
 ```
 
