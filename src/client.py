@@ -5,6 +5,7 @@ import time
 import prompt_toolkit
 import prompt_toolkit.key_binding
 import prompt_toolkit.widgets
+import prompt_toolkit.completion
 
 import actions
 import cli
@@ -13,7 +14,6 @@ import log
 import task
 from utils import ensure_path
 from jobs import *
-
 
 class Client:
     def __init__(self):
@@ -41,7 +41,8 @@ class Client:
         task.task_executor.logger_generator = self.setup_logger
 
         task.task_executor.execute(
-            "default", "cli.update.sidebar", "SidebarUpdate", None,areas=self.areas)
+            "default", "cli.update.sidebar", "SidebarUpdate", None,is_core_task=True,core_task_reason="This task is used to update sidebar. If it's stopped, the sidebar won't update.",areas=self.areas)
+
         task.task_executor.execute(
             "default", "user.load", "UserLoad", None)
         self.logger.info("BiBiClient started.")
@@ -49,12 +50,17 @@ class Client:
     def generate_layout(self):
         self.logArea = cli.LoggingArea()
         self.areas['log'] = self.logArea.getArea()
+        commands.commands_register.init_completion()
+        self.logArea.logText(str(commands.commands_register.completion_dict))
         self.areas['input'] = prompt_toolkit.widgets.TextArea(
-            height=prompt_toolkit.layout.Dimension(weight=3),
+            height=prompt_toolkit.layout.Dimension(weight=3,min=3),
             prompt=">>> ",
             focus_on_click=True,
-            multiline=False
+            multiline=False,
+            completer=commands.commands_register.completion,
+            complete_while_typing=True
         )
+        
         self.areas['livelist'] = prompt_toolkit.widgets.TextArea(
             height=prompt_toolkit.layout.Dimension(weight=1),
             focus_on_click=True,

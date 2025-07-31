@@ -12,6 +12,11 @@ class UserCommands(BaseCommand):
     hidden: bool = False
     command: str = "user"
     
+    completion = {
+        "login": {
+            "qrcode": None
+        }
+    }
     def handler(command_line: str, logger: logging.Logger):
         cmds=command_line.split(" ")[1:]
         if not cmds:
@@ -26,6 +31,6 @@ class UserCommands(BaseCommand):
                 match cmds[1]:
                     case "qrcode":
                         task.task_executor.execute(
-                            "default", "user.login.qrcode", "UserLoginQRCode", user.User())
+                            "default", "user.login.qrcode", logger, user.User())
             case "help":
                 logger.info("Available user commands: login, logout, info, help")

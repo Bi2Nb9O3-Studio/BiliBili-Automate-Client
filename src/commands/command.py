@@ -2,6 +2,7 @@ import logging
 import colorama
 import prompt_toolkit
 import prompt_toolkit.buffer
+import prompt_toolkit.completion
 
 
 class BaseCommand:
@@ -10,6 +11,8 @@ class BaseCommand:
     aliases: list[str] = []
     hidden: bool = False
     command: str = ""
+    
+    completion = None  # For command line completion, if needed
 
     def __init__(self):
         ...
@@ -24,11 +27,30 @@ class CommandRegister:
         self.commands = {}
         self.logger:logging.Logger
         self.logger_generator = None
+        self.completion_dict = {}
+    
+    def init_completion(self):
+        self.completion = prompt_toolkit.completion.NestedCompleter.from_nested_dict(
+            self.completion_dict)
     def register(self, command):
         if command.command in self.commands:
             raise ValueError(
                 f"Command {command.name} already registered with command line {command.command}")
         self.commands[command.command] = command
+        self.completion_dict.update({command.command:command.completion})
+        for alias in command.aliases:
+            if alias in self.commands:
+                raise ValueError(
+                    f"Alias {alias} already registered for command {self.commands[alias].name}")
+            self.commands[alias] = {
+                'handler': command.handler,
+                'command': alias,
+                'name': command.name,
+                'description': command.description,
+                'aliases': [command.command],
+                'hidden': True
+            }
+            self.completion_dict.update({alias:command.completion})
 
     def handle_command_line(self, buff: prompt_toolkit.buffer.Buffer):
         command_line = buff.text.strip()
@@ -47,7 +69,7 @@ class CommandRegister:
     def __iter__(self):
         return iter(self.commands.values())
 
-    def simple_register(self, handler, command, name, description="", aliases=[], hidden=False):
+    def simple_register(self, handler, command, name, description="", aliases=[], hidden=False, completion=None):
         """
         A simple way to register a command with a function.
         """

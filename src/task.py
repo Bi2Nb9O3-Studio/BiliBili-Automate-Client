@@ -16,12 +16,14 @@ class TaskCommand:
 
 
 class Task:
-    def __init__(self, uuid, job_obj,job_path, logger, user, args, kwargs={}):
+    def __init__(self, uuid, is_core_task, core_task_reason, job_obj,job_path, logger, user, args, kwargs={}):
         self.uuid = uuid
         self.statusQueue = queue.LifoQueue(5)
         self.commandQueue = queue.LifoQueue(5)
         self.logger = logger
         self.user = user
+        self.is_core_task = is_core_task
+        self.core_task_reason = core_task_reason
 
         self.job_name = job_path
         self.job = job_obj['func']
@@ -69,7 +71,11 @@ class Task:
             return None
         return self.statusQueue.get()
 
-    def stop(self):
+    def stop(self,bypass=False):
+        if self.is_core_task and not bypass:
+            self.logger.warning(
+                f"Cannot stop core task {self.uuid} ({self.job_name}) without bypass, due to reason: {self.core_task_reason}")
+            return
         if self.threading is not None and self.threading.is_alive():
             comm = TaskCommand("stop") if not self.job_commands.__contains__(
                 "stop") else self.job_commands["stop"]
@@ -88,26 +94,32 @@ class Task:
 class TaskExecutor:
     def __init__(self, logger: Logger) -> None:
         self.tasks:Dict[str, Task] = {}
+        self.tasks_set = set()
         self.logger = logger
         self.logger_generator = None
 
-    def execute(self, job_namespace: str, job_name: str, logger_name, user, *args, **kwargs):
+    def execute(self, job_namespace: str, job_name: str, logger_name, user,is_core_task=False, core_task_reason=None, *args, **kwargs):
         if job_name not in jobs.job_register.jobs.get(job_namespace, {}):
-            raise ValueError(f"Job '{job_name}' is not registered.")
+            self.logger_generator(f"Task<{job_namespace}:{job_name}>") if self.logger_generator else self.logger.error(f"Job not found: {job_namespace}:{job_name}")
         uuid = uuid4().hex
         logger= self.logger_generator(f"Task<{uuid[:8]}>:"+logger_name) if self.logger_generator else self.logger
 
-        task = Task(uuid, jobs.job_register.jobs[job_namespace][job_name],job_name,
+        task = Task(uuid, is_core_task, core_task_reason, jobs.job_register.jobs[job_namespace][job_name],job_name,
                     logger, user, args=args, kwargs=kwargs)
         self.tasks[uuid] = task
+        self.tasks_set.add(task.uuid)
         self.logger.info(
             f"{str(task)} for {job_namespace}:{job_name} created.")
         task.run()
         return uuid
+
+    def get_tasks_as_set(self):
+        
+        return self.tasks_set
     
     def stop_all_and_block(self):
         for task in self.tasks.values():
-            task.stop()
+            task.stop(bypass=True)
         for task in self.tasks.values():
             task.threading.join()
 

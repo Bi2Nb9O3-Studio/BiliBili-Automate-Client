@@ -18,3 +18,10 @@ class JobRegister:
             self.register_job(namespace, job_path, commands, func)
             return func
         return decorator
+    
+    def get_as_completion(self):
+        o={}
+        for namespace, jobs in self.jobs.items():
+            for job in jobs:
+                o[f"{namespace}:{job}"] = None
+        return o

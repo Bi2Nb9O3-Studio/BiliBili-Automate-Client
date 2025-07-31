@@ -35,6 +35,7 @@ def cli_update_sidebar(areas: Dict[str,TextArea],queues: Dict[str,Queue],runtime
         for t in list(task.task_executor.tasks.values()).copy():
             if not t.threading.is_alive():
                 task.task_executor.tasks.pop(t.uuid)
+                task.task_executor.tasks_set.discard(t.uuid)
         
         if queues['commandQueue'].qsize() > 0:
             command = queues['commandQueue'].get()
