@@ -23,6 +23,7 @@ class CommandRegister:
     def __init__(self):
         self.commands = {}
         self.logger:logging.Logger
+        self.logger_generator = None
     def register(self, command):
         if command.command in self.commands:
             raise ValueError(

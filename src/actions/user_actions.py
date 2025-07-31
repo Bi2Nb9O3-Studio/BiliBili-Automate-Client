@@ -165,7 +165,7 @@ class LoadSingleUserFromLocalAction(BaseAction):
     path = "user.load"
     location = (namespace, path)
 
-    def function(self, runtime_args, *args, **kwargs):
+    def function( runtime_args, *args, **kwargs):
         logger, user = runtime_args
         path=ensure_path("./users")
         file=ensure_file(path + f"/{user.mid}.json")
@@ -174,5 +174,4 @@ class LoadSingleUserFromLocalAction(BaseAction):
         user.refresh_token = content["refresh_token"]
         user.last_cookies_update = content["last_cookies_update"]
         logger.info(f"User {user.mid} loaded from local cache.")
-        user.name = content["name"]
         return
