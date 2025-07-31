@@ -13,9 +13,8 @@ class JobRegister:
         self.jobs[namespace][job_name] = {"func":job_func, "commands": commands}
     
     def register(self, namespace: str, job_path: str = None, commands: dict = {}):
+        # print(f"Registering job in namespace '{namespace}' with path '{job_path}' and commands {commands}")
         def decorator(func: Callable):
             self.register_job(namespace, job_path, commands, func)
             return func
         return decorator
-
-job_register = JobRegister()

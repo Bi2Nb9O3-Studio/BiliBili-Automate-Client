@@ -12,6 +12,7 @@ import commands
 import log
 import task
 from utils import ensure_path
+from jobs import *
 
 
 class Client:
@@ -22,8 +23,7 @@ class Client:
         self.logger = self.setup_logger("Main")
         commands.commands_register.logger = self.setup_logger("Command")
         self.logger.debug("Registered actions: %s", str(actions.actions_register.actions))
-        self.logger.info("BiBiClient started.")
-
+        
         def help(_, logger):
             """List all registered commands.
 
@@ -36,7 +36,15 @@ class Client:
             help, "help", "List Commands", "List all registered commands.",["?", "h"], hidden=False
         )
 
-        self.taskExecutor = task.TaskExecutor()
+        commands.commands_register.logger_generator = self.setup_logger
+        task.task_executor.logger = self.setup_logger("TaskExecutor")
+        task.task_executor.logger_generator = self.setup_logger
+
+        task.task_executor.execute(
+            "default", "cli.update.sidebar", self.setup_logger("SidebarUpdate"), None,areas=self.areas)
+        task.task_executor.execute(
+            "default", "user.load", self.setup_logger("UserLoad"), None)
+        self.logger.info("BiBiClient started.")
 
     def generate_layout(self):
         self.logArea = cli.LoggingArea()
@@ -118,5 +126,6 @@ class Client:
         logger.addHandler(streamHandler)
         return logger
     def stop(self):
+        task.task_executor.stop_all_and_block()
         self.app.exit()
         sys.exit(0)
