@@ -16,14 +16,14 @@ class TaskCommand:
 
 
 class Task:
-    def __init__(self, uuid, job_obj, logger, user, args, kwargs={}):
+    def __init__(self, uuid, job_obj,job_path, logger, user, args, kwargs={}):
         self.uuid = uuid
         self.statusQueue = queue.LifoQueue(5)
         self.commandQueue = queue.LifoQueue(5)
         self.logger = logger
         self.user = user
 
-        self.job_name = job_obj['func'].__name__
+        self.job_name = job_path
         self.job = job_obj['func']
         self.job_commands: Dict[str, TaskCommand] = job_obj['commands']
 
@@ -53,11 +53,11 @@ class Task:
                 }))
         self.threading = threading.Thread(
             target=job,
-            name=self.job_name
+            name=self.job_name+f"<{self.uuid[:8]}>",
         )
         self.threading.start()
         self.logger.info(
-            f"Task({self.uuid}) {self.threading.name}({self.threading.ident}) started.")
+            f"{str(str(self))} {self.threading.name}({self.threading.ident}) started.")
 
     def send(self, command):
         self.commandQueue.put(command)
@@ -82,7 +82,7 @@ class Task:
                 f"Task({self.uuid}) is not running, cannot stop.")
     
     def __str__(self):
-        return f"Task {self.job_name}<{self.uuid}>"
+        return f"Task<{self.uuid}>"
 
 
 class TaskExecutor:
@@ -91,15 +91,17 @@ class TaskExecutor:
         self.logger = logger
         self.logger_generator = None
 
-    def execute(self, job_namespace: str, job_name: str, logger, user, *args, **kwargs):
+    def execute(self, job_namespace: str, job_name: str, logger_name, user, *args, **kwargs):
         if job_name not in jobs.job_register.jobs.get(job_namespace, {}):
             raise ValueError(f"Job '{job_name}' is not registered.")
         uuid = uuid4().hex
-        task = Task(uuid, jobs.job_register.jobs[job_namespace]
-                    [job_name], logger, user, args=args, kwargs=kwargs)
+        logger= self.logger_generator(f"Task<{uuid[:8]}>:"+logger_name) if self.logger_generator else self.logger
+
+        task = Task(uuid, jobs.job_register.jobs[job_namespace][job_name],job_name,
+                    logger, user, args=args, kwargs=kwargs)
         self.tasks[uuid] = task
         self.logger.info(
-            f"Task<{uuid}> for {job_namespace}:{job_name} created.")
+            f"{str(task)} for {job_namespace}:{job_name} created.")
         task.run()
         return uuid
     
@@ -108,8 +110,8 @@ class TaskExecutor:
             task.stop()
         for task in self.tasks.values():
             task.threading.join()
-    
-        
+
+
 
 
 task_executor = TaskExecutor(None)

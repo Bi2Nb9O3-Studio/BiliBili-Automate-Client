@@ -41,9 +41,9 @@ class Client:
         task.task_executor.logger_generator = self.setup_logger
 
         task.task_executor.execute(
-            "default", "cli.update.sidebar", self.setup_logger("SidebarUpdate"), None,areas=self.areas)
+            "default", "cli.update.sidebar", "SidebarUpdate", None,areas=self.areas)
         task.task_executor.execute(
-            "default", "user.load", self.setup_logger("UserLoad"), None)
+            "default", "user.load", "UserLoad", None)
         self.logger.info("BiBiClient started.")
 
     def generate_layout(self):

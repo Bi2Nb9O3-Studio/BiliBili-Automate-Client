@@ -28,7 +28,7 @@ def cli_update_sidebar(areas: Dict[str,TextArea],queues: Dict[str,Queue],runtime
         areas['tasklist'].buffer.read_only = prompt_toolkit.filters.to_filter(
             False)
         # areas['tasklist'].buffer.clear()
-        areas['tasklist'].buffer.text="Tasks:\n"+"\n".join([str(i) for i in task.task_executor.tasks.values()])
+        areas['tasklist'].buffer.text="Tasks:\n"+"\n".join([str(i)+":"+i.job_name for i in task.task_executor.tasks.values()])
         areas['tasklist'].buffer.read_only = prompt_toolkit.filters.to_filter(
             True)
         

@@ -19,5 +19,13 @@ class UserCommands(BaseCommand):
             return
         match cmds[0]:
             case "login":
-                task.task_executor.execute(
-                    "default", "user.login.qrcode", logger, user.User())
+                if len(cmds) < 2:
+                    task.task_executor.execute(
+                        "default", "user.login.qrcode", "UserLoginQRCode", user.User())
+                    return
+                match cmds[1]:
+                    case "qrcode":
+                        task.task_executor.execute(
+                            "default", "user.login.qrcode", "UserLoginQRCode", user.User())
+            case "help":
+                logger.info("Available user commands: login, logout, info, help")
